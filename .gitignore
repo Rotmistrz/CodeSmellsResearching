@@ -2,3 +2,5 @@
 /results
 /results-all
 /logs/
+/results*
+/out

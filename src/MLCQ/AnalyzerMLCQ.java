@@ -59,7 +59,9 @@ public class AnalyzerMLCQ {
             if (receivedSamples.contains(review.getSampleID())) {
                 reachableReviews.add(review);
             } else {
-                expectedFiles++;
+                if (!failures.containsKey(review.getSampleID())) {
+                    expectedFiles++;
+                }
 
                 document = getDocument(review.getLink(), attemptsNumber);
 

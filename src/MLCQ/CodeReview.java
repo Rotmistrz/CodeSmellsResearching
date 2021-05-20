@@ -57,8 +57,39 @@ public class CodeReview {
         return this.codeName;
     }
 
+    public String getPreparedCodeName() {
+        if (this.codeName.indexOf(" ") > 0) {
+            String[] res = this.codeName.split(" ");
+
+            String core = res[0];
+
+            if (core.indexOf("#") > 0) {
+                return core;
+            } else {
+                String[] coreParts = core.split("\\.");
+                int classLen = coreParts.length - 1;
+
+                StringBuilder builder = new StringBuilder();
+
+                for (int i = 0; i < classLen; i++) {
+                    if (i > 0) {
+                        builder.append(".");
+                    }
+
+                    builder.append(coreParts[i]);
+                }
+
+                builder.append("#").append(coreParts[classLen]);
+
+                return builder.toString();
+            }
+        } else {
+            return this.codeName;
+        }
+    }
+
     public String getCommitHash() {
-        return this.codeName;
+        return this.commitHash;
     }
 
     public int getEndLine() {
