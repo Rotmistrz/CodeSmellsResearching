@@ -42,10 +42,42 @@ public class AnalyzerMLCQ {
         return new CsvToBeanBuilder(new FileReader(pathToSource)).withType(CodeReview.class).withSeparator(this.getCsvSeparator()).build().parse();
     }
 
+    public String getSubdirectoryName(CodeReview review) {
+        String baseName;
+
+        String[] parts;
+
+        if (review.codeName.indexOf(" ") > 0) {
+            parts = review.codeName.split(" ");
+
+            baseName = parts[0];
+        } else {
+            baseName = review.codeName;
+        }
+
+        if (baseName.indexOf("#") > 0) {
+            parts = baseName.split("#");
+
+            baseName = parts[0];
+        }
+
+        parts = baseName.split("\\.");
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < parts.length && i < 1; i++) {
+            result.append(parts[i]);
+        }
+
+        return result.toString();
+    }
+
     public List<CodeReview> receiveCodeSamples(String outputDir, List<CodeReview> reviews, int attemptsNumber) throws IOException, InterruptedException {
         Document document;
         Elements lines;
         String sampleOutputPath;
+        String packageDirectory;
+
         HashMap<Integer, String> failures = new HashMap<>();
         Set<Integer> receivedSamples = new HashSet<>();
         LinkedList<String> failureLogs = new LinkedList<>();
@@ -67,28 +99,53 @@ public class AnalyzerMLCQ {
 
                 if (document != null) {
                     lines = document.select(".type-java .js-file-line");
-                    sampleOutputPath = outputDir + "/" + review.getSampleID() + ".java";
 
-                    BufferedWriter writer = new BufferedWriter(new FileWriter(sampleOutputPath, false));
+                    if (lines.size() > 0) {
+                        if (lines.size() <= 4000) {
+                            packageDirectory = outputDir + "/" + getSubdirectoryName(review);
 
-                    for (Element line : lines) {
-                        writer.append(line.wholeText() + "\n");
+                            File packageDir = new File(packageDirectory);
+
+                            if (!packageDir.exists()) {
+                                packageDir.mkdir();
+                            }
+
+                            sampleOutputPath = packageDirectory + "/" + review.getSampleID() + ".java";
+
+                            BufferedWriter writer = new BufferedWriter(new FileWriter(sampleOutputPath, false));
+
+                            for (Element line : lines) {
+                                writer.append(line.wholeText() + "\n");
+                            }
+
+                            writer.close();
+
+                            receivedSamples.add(review.getSampleID());
+                            reachableReviews.add(review);
+                            actualFiles++;
+
+                            // console logs
+                            System.out.println("Sample " + review.getSampleID() + " saved! " + review.codeName);
+                        } else {
+                            failures.put(review.getSampleID(), review.getLink());
+                            failureLogs.add(review.getReviewID() + ", " + review.getSampleID() + ", " + review.getCodeSmell() + ", " + review.getSeverity() + ", " + review.getLink() + ", too large file to receive");
+
+                            // console logs
+                            System.out.println(review.getReviewID() + ", " + review.getSampleID() + ": problem with receiving the code - too large file.");
+                        }
+                    } else {
+                        failures.put(review.getSampleID(), review.getLink());
+                        failureLogs.add(review.getReviewID() + ", " + review.getSampleID() + ", " + review.getCodeSmell() + ", " + review.getSeverity() + ", " + review.getLink() + ", too large file to even reach it");
+
+                        // console logs
+                        System.out.println(review.getReviewID() + ", " + review.getSampleID() + ": problem with receiving the code - too large file to even reach it.");
                     }
-
-                    writer.close();
-
-                    receivedSamples.add(review.getSampleID());
-                    reachableReviews.add(review);
-                    actualFiles++;
-
-                    // console logs
-                    System.out.println("Sample " + review.getSampleID() + " saved! " + review.codeName);
                 } else {
                     failures.put(review.getSampleID(), review.getLink());
-                    failureLogs.add(review.getReviewID() + ", " + review.getSampleID() + ", " + review.getCodeSmell() + ", " + review.getSeverity() + ", " + review.getLink());
+                    failureLogs.add(review.getReviewID() + ", " + review.getSampleID() + ", " + review.getCodeSmell() + ", " + review.getSeverity() + ", " + review.getLink() + ", 404 Not Found");
 
                     // console logs
-                    System.out.println(review.getReviewID() + ", " + review.getSampleID() + ": problem with receiving the code.");
+                    System.out.println(review.getReviewID() + ", " + review.getSampleID() + ": problem with receiving the code - 404 Not Found.");
                 }
             }
         }

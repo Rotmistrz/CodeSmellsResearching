@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ResearchingMLCQProgramReceivingSamples {
     public static void main(String[] args) {
-        String filename = "./resources/MLCQCodeSmellSamples.csv";
+        String filename = "./resources/MLCQCodeSmellSamples-1000.csv";
         String resultsDir = "./results/mlcq";
 
         String resultsCodeDir = resultsDir + "/code";
