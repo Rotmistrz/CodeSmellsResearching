@@ -105,6 +105,16 @@ public class ResearchingMLCQProgram {
             SmellShortInfo smellInfo;
             String componentID;
 
+            int mlcqLongMethodSmells = 0;
+            int mlcqBlobSmells = 0;
+            int mlcqDataClassSmells = 0;
+            int mlcqFeatureEnvySmells = 0;
+
+            int mlcqLongMethodNone = 0;
+            int mlcqBlobNone = 0;
+            int mlcqDataClassNone = 0;
+            int mlcqFeatureEnvyNone = 0;
+
             for (CodeReview review : reviewsMLCQ) {
                 componentID = review.getPreparedCodeName();
 
@@ -125,6 +135,32 @@ public class ResearchingMLCQProgram {
                         } else { // false negative
                             smellFalseNegative.add(componentID);
                         }
+                    }
+                }
+
+                if (review.codeSmell.equals(MLCQCodeSmell.LONG_METHOD)) {
+                    if (review.severity.equals(MLCQCodeSmell.NONE)) {
+                        mlcqLongMethodNone++;
+                    } else {
+                        mlcqLongMethodSmells++;
+                    }
+                } else if (review.codeSmell.equals(MLCQCodeSmell.BLOB)) {
+                    if (review.severity.equals(MLCQCodeSmell.NONE)) {
+                        mlcqBlobNone++;
+                    } else {
+                        mlcqBlobSmells++;
+                    }
+                } else if (review.codeSmell.equals(MLCQCodeSmell.FEATURE_ENVY)) {
+                    if (review.severity.equals(MLCQCodeSmell.NONE)) {
+                        mlcqFeatureEnvyNone++;
+                    } else {
+                        mlcqFeatureEnvySmells++;
+                    }
+                } else if (review.codeSmell.equals(MLCQCodeSmell.DATA_CLASS)) {
+                    if (review.severity.equals(MLCQCodeSmell.NONE)) {
+                        mlcqDataClassNone++;
+                    } else {
+                        mlcqDataClassSmells++;
                     }
                 }
             }
@@ -150,6 +186,13 @@ public class ResearchingMLCQProgram {
             for (String fits : smellFalseNegative) {
                 System.out.println(fits);
             }
+
+            System.out.println("\n\n\nMLCQ smells:");
+            System.out.println("Long Method: Existing:" + mlcqLongMethodSmells + ", None:" + mlcqLongMethodNone);
+            System.out.println("Data Class: Existing:" + mlcqDataClassSmells + ", None:" + mlcqDataClassNone);
+            System.out.println("Blob: Existing:" + mlcqBlobSmells + ", None:" + mlcqBlobNone);
+            System.out.println("Feature Envy: Existing:" + mlcqFeatureEnvySmells + ", None:" + mlcqFeatureEnvyNone);
+
         } catch (Exception e) {
             System.out.println("Błąd: " + e.getMessage());
             System.out.println(e.toString());
