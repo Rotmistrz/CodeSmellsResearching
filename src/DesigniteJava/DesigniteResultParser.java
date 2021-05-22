@@ -38,23 +38,23 @@ public class DesigniteResultParser {
         return this.getDir() + "/" + filename;
     }
 
-    public List<ImplementationSmell> prepareResults(Reader reader) throws FileNotFoundException {
-        return new CsvToBeanBuilder(reader).withType(ImplementationSmell.class).withSeparator(this.getCsvSeparator()).build().parse();
+    public List<Smell> prepareResults(Reader reader, Class clazz) throws FileNotFoundException {
+        return new CsvToBeanBuilder(reader).withType(clazz).withSeparator(this.getCsvSeparator()).build().parse();
     }
 
-    public HashMap<String, SmellShortInfo> parseImplementationSmells(Reader reader, int[] smells) throws FileNotFoundException {
-        List<ImplementationSmell> raw = this.prepareResults(reader);
+    public HashMap<String, SmellShortInfo> parseImplementationSmells(Reader reader, Class clazz, int[] smells) throws FileNotFoundException {
+        List<Smell> raw = this.prepareResults(reader, clazz);
 
         HashMap<String, SmellShortInfo> result = new HashMap<>();
 
         String currentID;
         int smellCode;
 
-        for (ImplementationSmell smell : raw) {
-            smellCode = DesigniteCodeSmell.getStandardCodeSmell(smell.implementationSmell);
+        for (Smell smell : raw) {
+            smellCode = DesigniteCodeSmell.getStandardCodeSmell(smell.getSmell());
 
             if (ArrayUtils.contains(smells, smellCode)) {
-                currentID = smell.packageName + "." + smell.typeName + "#" + smell.methodName;
+                currentID = smell.getComponentID();
 
                 SmellShortInfo smellInfo;
 

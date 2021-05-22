@@ -2,6 +2,8 @@ package MLCQ.Researching;
 
 import CodeSmells.CodeSmell;
 import DesigniteJava.DesigniteResultParser;
+import DesigniteJava.Smells.DesignSmell;
+import DesigniteJava.Smells.ImplementationSmell;
 import DesigniteJava.Smells.SmellShortInfo;
 import MLCQ.AnalyzerMLCQ;
 import MLCQ.CodeReview;
@@ -14,13 +16,23 @@ import java.util.List;
 
 public class ResearchingMLCQProgram {
 
-    public static HashMap<String, SmellShortInfo> parseImplementationSmells(String dir, String packageName, int[] wantedSmells) throws IOException {
+    public static HashMap<String, SmellShortInfo> parseSmells(String dir, String packageName, Class clazz, int[] wantedSmells) throws IOException {
+        String filename;
+
+        if (clazz == ImplementationSmell.class) {
+            filename = "ImplementationSmells.csv";
+        } else if (clazz == DesignSmell.class) {
+            filename = "DesignSmells.csv";
+        } else {
+            filename = "";
+        }
+
         DesigniteResultParser parser = new DesigniteResultParser(dir, ',');
 
-        Reader reader = new FileReader(dir + "/" + packageName + "/ImplementationSmells.csv");
+        Reader reader = new FileReader(dir + "/" + packageName + "/" + filename);
         BufferedReader buffReader = new BufferedReader(reader);
 
-        HashMap<String, SmellShortInfo> implementationSmells = parser.parseImplementationSmells(buffReader, wantedSmells);
+        HashMap<String, SmellShortInfo> implementationSmells = parser.parseImplementationSmells(buffReader, clazz, wantedSmells);
 
         reader.close();
         buffReader.close();
@@ -30,7 +42,11 @@ public class ResearchingMLCQProgram {
 
     public static void main(String[] args) {
         String pathMLCQ = "./results/mlcq/csv/final-code-reviews.csv";
-        String pathDesigniteJava = "./results/designite-java/raw-output";
+        String pathDesigniteJava = "./results/designite-java/parsed-output";
+        Class clazz = DesignSmell.class;
+        String smellName = "FEATURE ENVY";
+        String mlcqSmellName = MLCQCodeSmell.FEATURE_ENVY;
+        int smellCode = CodeSmell.FEATURE_ENVY;
 
         try {
             AnalyzerMLCQ analyzer = new AnalyzerMLCQ(pathMLCQ, "./logs", ';');
@@ -43,49 +59,48 @@ public class ResearchingMLCQProgram {
             mlcqReader.close();
             mlcqBuffRbuffReader.close();
 
-            int[] wantedImplementationSmells = { CodeSmell.LONG_METHOD };
+            int[] wantedSmells = { smellCode };
             DesigniteResultParser parser = new DesigniteResultParser(pathDesigniteJava, ',');
 
             //
             // COM
             //
-            HashMap<String, SmellShortInfo> implementationSmellsCom = parseImplementationSmells(pathDesigniteJava, "com", wantedImplementationSmells);
+            HashMap<String, SmellShortInfo> smellsCom = parseSmells(pathDesigniteJava, "com", clazz, wantedSmells);
 
             System.out.println("Com loaded.");
 
             //
             // FROM A TO I
             //
-            HashMap<String, SmellShortInfo> implementationSmellsAI = parseImplementationSmells(pathDesigniteJava, "__from-a-to-i", wantedImplementationSmells);
+            HashMap<String, SmellShortInfo> smellsAI = parseSmells(pathDesigniteJava, "__from-a-to-i", clazz, wantedSmells);
 
             System.out.println("From A to I loaded.");
 
             //
             // FROM J TO Z
             //
-            HashMap<String, SmellShortInfo> implementationSmellsJZ = parseImplementationSmells(pathDesigniteJava, "__from-j-to-z", wantedImplementationSmells);
+            HashMap<String, SmellShortInfo> smellsJZ = parseSmells(pathDesigniteJava, "__from-j-to-z", clazz, wantedSmells);
 
             System.out.println("From J to Z loaded.");
 
             //
             // ORG
             //
-            HashMap<String, SmellShortInfo> implementationSmellsOrg = parseImplementationSmells(pathDesigniteJava, "org", wantedImplementationSmells);
+            HashMap<String, SmellShortInfo> smellsOrg = parseSmells(pathDesigniteJava, "org", clazz, wantedSmells);
 
             System.out.println("Org loaded.");
 
 
-            HashMap<String, SmellShortInfo> implementationSmells = new HashMap<>();
-            implementationSmells.putAll(implementationSmellsCom);
-            implementationSmells.putAll(implementationSmellsAI);
-            implementationSmells.putAll(implementationSmellsJZ);
-            implementationSmells.putAll(implementationSmellsOrg);
+            HashMap<String, SmellShortInfo> smells = new HashMap<>();
+            smells.putAll(smellsCom);
+            smells.putAll(smellsAI);
+            smells.putAll(smellsJZ);
+            smells.putAll(smellsOrg);
 
             LinkedList<String> noneFits = new LinkedList<>();
-
-            LinkedList<String> longMethodFits = new LinkedList<>();
-            LinkedList<String> longMethodFalsePositives = new LinkedList<>();
-            LinkedList<String> longMethodFalseNegative = new LinkedList<>();
+            LinkedList<String> smellFits = new LinkedList<>();
+            LinkedList<String> smellFalsePositives = new LinkedList<>();
+            LinkedList<String> smellFalseNegative = new LinkedList<>();
 
             SmellShortInfo smellInfo;
             String componentID;
@@ -93,34 +108,36 @@ public class ResearchingMLCQProgram {
             for (CodeReview review : reviewsMLCQ) {
                 componentID = review.getPreparedCodeName();
 
-                if (review.codeSmell.equals(MLCQCodeSmell.LONG_METHOD)) {
+                if (review.codeSmell.equals(mlcqSmellName)) {
                     if (review.severity.equals(MLCQCodeSmell.NONE)) {
-                        if (!implementationSmells.containsKey(componentID)) { // true negative
+                        if (!smells.containsKey(componentID)) { // true negative
                             noneFits.add(componentID);
                         } else {
-                            longMethodFalsePositives.add(componentID); // false positive
+                            smellFalsePositives.add(componentID); // false positive
                         }
                     } else {
-                        if (implementationSmells.containsKey(componentID)) { // true positive
-                            smellInfo = implementationSmells.get(componentID);
+                        if (smells.containsKey(componentID)) { // true positive
+                            smellInfo = smells.get(componentID);
 
-                            if (smellInfo.hasSmell(CodeSmell.LONG_METHOD)) {
-                                longMethodFits.add(componentID);
+                            if (smellInfo.hasSmell(smellCode)) {
+                                smellFits.add(componentID);
                             }
                         } else { // false negative
-                            longMethodFalseNegative.add(componentID);
+                            smellFalseNegative.add(componentID);
                         }
                     }
                 }
             }
 
-            System.out.println("Long method fits (true positive): " + longMethodFits.size());
+            System.out.println("==== " + smellName + " ====\n");
 
-//            for (String lmFits : longMethodFits) {
-//                System.out.println(lmFits);
-//            }
+            System.out.println("Smell fits (true positive): " + smellFits.size());
 
-            System.out.println("\n\nLong method false positives: " + longMethodFalsePositives.size());
+            for (String fits : smellFits) {
+                System.out.println(fits);
+            }
+
+            System.out.println("\n\nSmell false positives: " + smellFalsePositives.size());
 
 //            for (String lmFalsePositives : longMethodFalsePositives) {
 //                System.out.println(lmFalsePositives);
@@ -128,11 +145,11 @@ public class ResearchingMLCQProgram {
 
             System.out.println("\n\nNone fits (true negative): " + noneFits.size());
 
-            System.out.println("\n\nLong method false negative: " + longMethodFalseNegative.size());
+            System.out.println("\n\nSmell false negative: " + smellFalseNegative.size());
 //
-//            for (String fits : noneFits) {
-//                System.out.println(fits);
-//            }
+            for (String fits : smellFalseNegative) {
+                System.out.println(fits);
+            }
         } catch (Exception e) {
             System.out.println("Błąd: " + e.getMessage());
             System.out.println(e.toString());
