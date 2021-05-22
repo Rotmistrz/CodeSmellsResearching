@@ -13,16 +13,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ResearchingMLCQProgramReceivingSamples {
     public static void main(String[] args) {
-        String filename = "./resources/MLCQCodeSmellSamples-1000.csv";
+        String filename = "./resources/MLCQCodeSmellSamples.csv";
         String resultsDir = "./results/mlcq";
 
         String resultsCodeDir = resultsDir + "/code";
@@ -31,7 +28,13 @@ public class ResearchingMLCQProgramReceivingSamples {
         try {
             AnalyzerMLCQ analyzer = new AnalyzerMLCQ(filename, "./logs", ';');
 
-            List<CodeReview> reviews = analyzer.prepareReviews(filename);
+            Reader reader = new FileReader(filename);
+            BufferedReader buffReader = new BufferedReader(reader);
+
+            List<CodeReview> reviews = analyzer.prepareReviews(buffReader);
+
+            reader.close();
+            buffReader.close();
 
             int expectedFiles = reviews.size();
 

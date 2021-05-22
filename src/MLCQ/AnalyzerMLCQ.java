@@ -38,8 +38,8 @@ public class AnalyzerMLCQ {
         return this.csvSeparator;
     }
 
-    public List<CodeReview> prepareReviews(String pathToSource) throws FileNotFoundException {
-        return new CsvToBeanBuilder(new FileReader(pathToSource)).withType(CodeReview.class).withSeparator(this.getCsvSeparator()).build().parse();
+    public List<CodeReview> prepareReviews(Reader reader) throws FileNotFoundException {
+        return new CsvToBeanBuilder(reader).withType(CodeReview.class).withSeparator(this.getCsvSeparator()).build().parse();
     }
 
     public String getSubdirectoryName(CodeReview review) {
@@ -191,6 +191,8 @@ public class AnalyzerMLCQ {
                 .build();
 
         sbc.write(reviews);
+
+        writer.close();
     }
 
     public static Document getDocument(String url, int maxAttempts) throws InterruptedException {

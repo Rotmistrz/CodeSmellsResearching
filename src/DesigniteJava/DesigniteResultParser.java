@@ -6,10 +6,13 @@ import DesigniteJava.Smells.Smell;
 import DesigniteJava.Smells.SmellShortInfo;
 import MLCQ.CodeReview;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,12 +38,12 @@ public class DesigniteResultParser {
         return this.getDir() + "/" + filename;
     }
 
-    public List<ImplementationSmell> prepareResults(String pathToSource) throws FileNotFoundException {
-        return new CsvToBeanBuilder(new FileReader(pathToSource)).withType(ImplementationSmell.class).withSeparator(this.getCsvSeparator()).build().parse();
+    public List<ImplementationSmell> prepareResults(Reader reader) throws FileNotFoundException {
+        return new CsvToBeanBuilder(reader).withType(ImplementationSmell.class).withSeparator(this.getCsvSeparator()).build().parse();
     }
 
-    public HashMap<String, SmellShortInfo> parseImplementationSmells(String filename, int[] smells) throws FileNotFoundException {
-        List<ImplementationSmell> raw = this.prepareResults(getPath(filename));
+    public HashMap<String, SmellShortInfo> parseImplementationSmells(Reader reader, int[] smells) throws FileNotFoundException {
+        List<ImplementationSmell> raw = this.prepareResults(reader);
 
         HashMap<String, SmellShortInfo> result = new HashMap<>();
 
