@@ -1,25 +1,17 @@
 package DesigniteJava;
 
-import CodeSmells.CodeSmell;
-import DesigniteJava.Smells.DesigniteCodeSmell;
-import DesigniteJava.Smells.ImplementationSmell;
-import DesigniteJava.Smells.SmellShortInfo;
+import DesigniteJava.Smells.DesigniteCodeSmellName;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
-import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.CsvToBeanBuilder;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
 
 public class DesigniteAnalyzerProgram {
     public static boolean smellFits(String smell) {
-        return smell.equals(DesigniteCodeSmell.FEATURE_ENVY);
+        return smell.equals(DesigniteCodeSmellName.FEATURE_ENVY);
     }
 
     public static void main(String[] args) {

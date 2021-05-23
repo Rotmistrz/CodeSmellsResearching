@@ -1,8 +1,9 @@
 package DesigniteJava.Smells;
 
+import CodeSmells.Smell;
 import com.opencsv.bean.CsvBindByName;
 
-abstract public class Smell {
+abstract public class DesigniteSmell extends Smell {
     @CsvBindByName(column = "Project Name")
     public String projectName;
 
@@ -14,7 +15,4 @@ abstract public class Smell {
 
     @CsvBindByName(column = "Cause of the Smell")
     public String cause;
-
-    abstract public String getSmell();
-    abstract public String getComponentID();
 }

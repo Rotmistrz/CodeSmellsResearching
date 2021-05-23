@@ -1,10 +1,10 @@
 package MLCQ.Researching;
 
-import CodeSmells.CodeSmell;
+import CodeSmells.CodeSmellName;
 import DesigniteJava.DesigniteResultParser;
 import DesigniteJava.Smells.DesignSmell;
 import DesigniteJava.Smells.ImplementationSmell;
-import DesigniteJava.Smells.SmellShortInfo;
+import CodeSmells.SmellShortInfo;
 import MLCQ.AnalyzerMLCQ;
 import MLCQ.CodeReview;
 import MLCQ.Smells.MLCQCodeSmell;
@@ -32,7 +32,7 @@ public class ResearchingMLCQProgram {
         Reader reader = new FileReader(dir + "/" + packageName + "/" + filename);
         BufferedReader buffReader = new BufferedReader(reader);
 
-        HashMap<String, SmellShortInfo> implementationSmells = parser.parseImplementationSmells(buffReader, clazz, wantedSmells);
+        HashMap<String, SmellShortInfo> implementationSmells = parser.parseSmells(buffReader, clazz, wantedSmells);
 
         reader.close();
         buffReader.close();
@@ -46,7 +46,7 @@ public class ResearchingMLCQProgram {
         Class clazz = DesignSmell.class;
         String smellName = "FEATURE ENVY";
         String mlcqSmellName = MLCQCodeSmell.FEATURE_ENVY;
-        int smellCode = CodeSmell.FEATURE_ENVY;
+        int smellCode = CodeSmellName.FEATURE_ENVY;
 
         try {
             AnalyzerMLCQ analyzer = new AnalyzerMLCQ(pathMLCQ, "./logs", ';');

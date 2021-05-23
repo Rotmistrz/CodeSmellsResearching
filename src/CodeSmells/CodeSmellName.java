@@ -1,6 +1,6 @@
 package CodeSmells;
 
-public class CodeSmell {
+public class CodeSmellName {
     public static final int UNDEFINED = -1;
 
     public static final int BLOB = 1;

@@ -1,7 +1,6 @@
-package DesigniteJava.Smells;
+package CodeSmells;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class SmellShortInfo {
     private String component;
