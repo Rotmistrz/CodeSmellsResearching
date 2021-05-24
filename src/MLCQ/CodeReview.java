@@ -53,6 +53,10 @@ public class CodeReview {
     @CsvBindByName(column = "is_from_industry_relevant_project")
     public String isFromIndustryRelevantProject;
 
+    public boolean isLineInRange(int externalLine) {
+        return externalLine > startLine && externalLine < endLine;
+    }
+
     public String getCodeName() {
         return this.codeName;
     }

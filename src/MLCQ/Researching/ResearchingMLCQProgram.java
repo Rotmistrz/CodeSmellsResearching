@@ -1,13 +1,19 @@
 package MLCQ.Researching;
 
+import BinaryClassification.BinaryClassificationResult;
+import BinaryClassification.BinaryClassificationStatistics;
 import CodeSmells.CodeSmellName;
 import DesigniteJava.DesigniteResultParser;
 import DesigniteJava.Smells.DesignSmell;
 import DesigniteJava.Smells.ImplementationSmell;
 import CodeSmells.SmellShortInfo;
+import MLCQ.Analysis.PMDFileSmells;
 import MLCQ.AnalyzerMLCQ;
 import MLCQ.CodeReview;
 import MLCQ.Smells.MLCQCodeSmell;
+import PMD.PMDResultParser;
+import PMD.Smells.PMDCodeSmellName;
+import PMD.Smells.PMDSmell;
 
 import java.io.*;
 import java.util.HashMap;
@@ -16,7 +22,7 @@ import java.util.List;
 
 public class ResearchingMLCQProgram {
 
-    public static HashMap<String, SmellShortInfo> parseSmells(String dir, String packageName, Class clazz, int[] wantedSmells) throws IOException {
+    public static HashMap<String, SmellShortInfo> parseDesigniteSmells(String dir, String packageName, Class clazz, int[] wantedSmells) throws IOException {
         String filename;
 
         if (clazz == ImplementationSmell.class) {
@@ -38,6 +44,20 @@ public class ResearchingMLCQProgram {
         buffReader.close();
 
         return implementationSmells;
+    }
+
+    public static HashMap<String, PMDFileSmells> parsePMDSmells(String path, int[] wantedSmells) throws IOException {
+        PMDResultParser pmdResultParser = new PMDResultParser();
+
+        Reader reader = new FileReader(path);
+        BufferedReader buffReader = new BufferedReader(reader);
+
+        HashMap<String, PMDFileSmells> pmdSmellsCom = pmdResultParser.parseSmells(buffReader, wantedSmells);
+
+        reader.close();
+        buffReader.close();
+
+        return pmdSmellsCom;
     }
 
     public static void main(String[] args) {
@@ -65,28 +85,28 @@ public class ResearchingMLCQProgram {
             //
             // COM
             //
-            HashMap<String, SmellShortInfo> smellsCom = parseSmells(pathDesigniteJava, "com", clazz, wantedSmells);
+            HashMap<String, SmellShortInfo> smellsCom = parseDesigniteSmells(pathDesigniteJava, "com", clazz, wantedSmells);
 
             System.out.println("Com loaded.");
 
             //
             // FROM A TO I
             //
-            HashMap<String, SmellShortInfo> smellsAI = parseSmells(pathDesigniteJava, "__from-a-to-i", clazz, wantedSmells);
+            HashMap<String, SmellShortInfo> smellsAI = parseDesigniteSmells(pathDesigniteJava, "__from-a-to-i", clazz, wantedSmells);
 
             System.out.println("From A to I loaded.");
 
             //
             // FROM J TO Z
             //
-            HashMap<String, SmellShortInfo> smellsJZ = parseSmells(pathDesigniteJava, "__from-j-to-z", clazz, wantedSmells);
+            HashMap<String, SmellShortInfo> smellsJZ = parseDesigniteSmells(pathDesigniteJava, "__from-j-to-z", clazz, wantedSmells);
 
             System.out.println("From J to Z loaded.");
 
             //
             // ORG
             //
-            HashMap<String, SmellShortInfo> smellsOrg = parseSmells(pathDesigniteJava, "org", clazz, wantedSmells);
+            HashMap<String, SmellShortInfo> smellsOrg = parseDesigniteSmells(pathDesigniteJava, "org", clazz, wantedSmells);
 
             System.out.println("Org loaded.");
 
@@ -105,6 +125,8 @@ public class ResearchingMLCQProgram {
             SmellShortInfo smellInfo;
             String componentID;
 
+            // MLCQ Statistics
+
             int mlcqLongMethodSmells = 0;
             int mlcqBlobSmells = 0;
             int mlcqDataClassSmells = 0;
@@ -114,6 +136,31 @@ public class ResearchingMLCQProgram {
             int mlcqBlobNone = 0;
             int mlcqDataClassNone = 0;
             int mlcqFeatureEnvyNone = 0;
+
+            // PMD Statistics
+
+            HashMap<String, PMDFileSmells> pmdSmells = new HashMap<>();
+
+            int[] pmdWantedSmells = { CodeSmellName.BLOB, CodeSmellName.DATA_CLASS, CodeSmellName.LONG_METHOD };
+
+            HashMap<String, PMDFileSmells> pmdSmellsCom = parsePMDSmells("./results/pmd/raw-output/com/pmd-report.csv", pmdWantedSmells);
+            HashMap<String, PMDFileSmells> pmdSmellsOrg = parsePMDSmells("./results/pmd/raw-output/org/pmd-report.csv", pmdWantedSmells);
+            HashMap<String, PMDFileSmells> pmdSmellsFromAToI = parsePMDSmells("./results/pmd/raw-output/__from-a-to-i/pmd-report.csv", pmdWantedSmells);
+            HashMap<String, PMDFileSmells> pmdSmellsFromJToZ = parsePMDSmells("./results/pmd/raw-output/__from-j-to-z/pmd-report.csv", pmdWantedSmells);
+
+            pmdSmells.putAll(pmdSmellsCom);
+            pmdSmells.putAll(pmdSmellsOrg);
+            pmdSmells.putAll(pmdSmellsFromAToI);
+            pmdSmells.putAll(pmdSmellsFromJToZ);
+
+            System.out.println(pmdSmells.size());
+
+            BinaryClassificationStatistics pmdBlob = new BinaryClassificationStatistics();
+            BinaryClassificationStatistics pmdLongMethod = new BinaryClassificationStatistics();
+            BinaryClassificationStatistics pmdDataClass = new BinaryClassificationStatistics();
+
+            PMDFileSmells pmdSmell;
+            BinaryClassificationResult binaryClassificationResult;
 
             for (CodeReview review : reviewsMLCQ) {
                 componentID = review.getPreparedCodeName();
@@ -163,6 +210,21 @@ public class ResearchingMLCQProgram {
                         mlcqDataClassSmells++;
                     }
                 }
+
+                // PMD results
+                pmdSmell = pmdSmells.get(review.sampleID + "");
+
+                if (pmdSmell == null) {
+                    pmdSmell = new PMDFileSmells(review.sampleID + "");
+                }
+
+                if (review.codeSmell.equals(MLCQCodeSmell.BLOB)) {
+                    pmdBlob.increase(pmdSmell.checkMLCQReview(review));
+                } else if (review.codeSmell.equals(MLCQCodeSmell.DATA_CLASS)) {
+                    pmdDataClass.increase(pmdSmell.checkMLCQReview(review));
+                } else if (review.codeSmell.equals(MLCQCodeSmell.LONG_METHOD)) {
+                    pmdLongMethod.increase(pmdSmell.checkMLCQReview(review));
+                }
             }
 
             System.out.println("==== " + smellName + " ====\n");
@@ -192,6 +254,16 @@ public class ResearchingMLCQProgram {
             System.out.println("Data Class: Existing:" + mlcqDataClassSmells + ", None:" + mlcqDataClassNone);
             System.out.println("Blob: Existing:" + mlcqBlobSmells + ", None:" + mlcqBlobNone);
             System.out.println("Feature Envy: Existing:" + mlcqFeatureEnvySmells + ", None:" + mlcqFeatureEnvyNone);
+
+            System.out.println("\n\n\nResearching PMD results...");
+            System.out.println(">> BLOB:");
+            System.out.println(pmdBlob);
+
+            System.out.println(">> DATA CLASS:");
+            System.out.println(pmdDataClass);
+
+            System.out.println(">> LONG METHOD:");
+            System.out.println(pmdLongMethod);
 
         } catch (Exception e) {
             System.out.println("Błąd: " + e.getMessage());

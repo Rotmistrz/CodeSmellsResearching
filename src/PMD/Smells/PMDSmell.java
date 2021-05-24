@@ -1,5 +1,6 @@
 package PMD.Smells;
 
+import CodeSmells.CodeSmellName;
 import CodeSmells.Smell;
 import com.opencsv.bean.CsvBindByName;
 
@@ -43,5 +44,17 @@ public class PMDSmell extends Smell {
         parts = filename.split("\\.");
 
         return parts[0];
+    }
+
+    public boolean isSmelling(int smellCode) {
+        if (smellCode == CodeSmellName.BLOB) {
+            return rule.equals(PMDCodeSmellName.EXCESSIVE_CLASS_LENGTH) || rule.equals(PMDCodeSmellName.GOD_CLASS);
+        } else if (smellCode == CodeSmellName.LONG_METHOD) {
+            return rule.equals(PMDCodeSmellName.EXCESSIVE_METHOD_LENGTH);
+        } else if (smellCode == CodeSmellName.DATA_CLASS) {
+            return rule.equals(PMDCodeSmellName.DATA_CLASS);
+        } else {
+            return false;
+        }
     }
 }
