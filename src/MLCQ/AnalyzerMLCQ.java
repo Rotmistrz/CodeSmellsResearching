@@ -196,11 +196,10 @@ public class AnalyzerMLCQ {
     }
 
     public static Document getDocument(String url, int maxAttempts) throws InterruptedException {
-        boolean isDownloaded = false;
         int attempt = 0;
-        Document result = null;
+        Document result;
 
-        while (!isDownloaded && attempt < maxAttempts) {
+        while (attempt < maxAttempts) {
             try {
                 result = Jsoup.connect(url).get();
 

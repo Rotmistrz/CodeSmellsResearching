@@ -162,24 +162,30 @@ public class ResearchingMLCQProgram {
             PMDFileSmells pmdSmell;
             BinaryClassificationResult binaryClassificationResult;
 
+            BinaryClassificationStatistics djStat = new BinaryClassificationStatistics();
+
             for (CodeReview review : reviewsMLCQ) {
                 componentID = review.getPreparedCodeName();
 
                 if (review.codeSmell.equals(mlcqSmellName)) {
                     if (review.severity.equals(MLCQCodeSmell.NONE)) {
                         if (!smells.containsKey(componentID)) { // true negative
+                            djStat.increaseTrueNegatives();
                             noneFits.add(componentID);
                         } else {
+                            djStat.increaseFalsePositives();
                             smellFalsePositives.add(componentID); // false positive
                         }
                     } else {
                         if (smells.containsKey(componentID)) { // true positive
+                            djStat.increaseTruePositives();
                             smellInfo = smells.get(componentID);
 
                             if (smellInfo.hasSmell(smellCode)) {
                                 smellFits.add(componentID);
                             }
                         } else { // false negative
+                            djStat.increaseFalseNegatives();
                             smellFalseNegative.add(componentID);
                         }
                     }
@@ -229,22 +235,25 @@ public class ResearchingMLCQProgram {
 
             System.out.println("==== " + smellName + " ====\n");
 
-            System.out.println("Smell fits (true positive): " + smellFits.size());
+            System.out.println("Smell fits (true positive): " + smellFits.size() + " " + djStat.getTruePositives());
 
-            for (String fits : smellFits) {
-                System.out.println(fits);
-            }
+//            for (String fits : smellFits) {
+//                System.out.println(fits);
+//            }
 
-            System.out.println("\n\nSmell false positives: " + smellFalsePositives.size());
+            System.out.println("\n\nSmell false positives: " + smellFalsePositives.size() + " " + djStat.getFalsePositives());
 
 //            for (String lmFalsePositives : longMethodFalsePositives) {
 //                System.out.println(lmFalsePositives);
 //            }
 
-            System.out.println("\n\nNone fits (true negative): " + noneFits.size());
+            System.out.println("\n\nNone fits (true negative): " + noneFits.size() + " " + djStat.getTrueNegatives());
 
-            System.out.println("\n\nSmell false negative: " + smellFalseNegative.size());
-//
+            System.out.println("\n\nSmell false negative: " + smellFalseNegative.size() + " " + djStat.getFalseNegatives());
+
+            System.out.println("MCC: " + djStat.getMCC());
+
+            //
             for (String fits : smellFalseNegative) {
                 System.out.println(fits);
             }

@@ -73,7 +73,34 @@ public class BinaryClassificationStatistics {
         }
     }
 
+    public double getRecall() {
+        return ((double) getTruePositives() / ((double) getTruePositives() + (double) getFalseNegatives()));
+    }
+
+    public double getSpecificity() {
+        return ((double) getTrueNegatives() / ((double) getFalsePositives() + (double) getTrueNegatives()));
+    }
+
+    public double getPrecision() {
+        return ((double) getTruePositives() / ((double) getTruePositives() + (double) getFalsePositives()));
+    }
+
+    public double getAccuracy() {
+        return (((double) getTruePositives() + (double) getTrueNegatives()) / ((double) getTruePositives() + (double) getTrueNegatives() + (double) getFalsePositives() + (double) getFalseNegatives()));
+    }
+
+    public double getMCC() {
+        return ((double) ((getTruePositives() * getTrueNegatives()) - (getFalsePositives() * getFalseNegatives()))) / (Math.sqrt((double) (getTruePositives() + getFalsePositives()) * (double) (getTruePositives() + getFalseNegatives()) * (double) (getTrueNegatives() + getFalsePositives()) * (double) (getTrueNegatives() + getFalseNegatives())));
+    }
+
     public String toString() {
-        return "TP: " + getTruePositives() + "\nTN: " + getTrueNegatives() + "\nFP: " + getFalsePositives() + "\nFN: " + getFalseNegatives();
+        String result = "TP: " + getTruePositives() + "\nTN: " + getTrueNegatives() + "\nFP: " + getFalsePositives() + "\nFN: " + getFalseNegatives() +"\n";
+        result += "\nRecall: " + getRecall();
+        result += "\nSpecificity: " + getSpecificity();
+        result += "\nPrecision: " + getPrecision();
+        result += "\nAccuracy: " + getAccuracy();
+        result += "\nMCC: " + getMCC();
+
+        return result;
     }
 }
