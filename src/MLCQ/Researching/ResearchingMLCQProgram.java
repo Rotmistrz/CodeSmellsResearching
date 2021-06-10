@@ -143,10 +143,10 @@ public class ResearchingMLCQProgram {
 
             int[] pmdWantedSmells = { CodeSmellName.BLOB, CodeSmellName.DATA_CLASS, CodeSmellName.LONG_METHOD };
 
-            HashMap<String, PMDFileSmells> pmdSmellsCom = parsePMDSmells("./results/pmd/raw-output/com/pmd-report.csv", pmdWantedSmells);
-            HashMap<String, PMDFileSmells> pmdSmellsOrg = parsePMDSmells("./results/pmd/raw-output/org/pmd-report.csv", pmdWantedSmells);
-            HashMap<String, PMDFileSmells> pmdSmellsFromAToI = parsePMDSmells("./results/pmd/raw-output/__from-a-to-i/pmd-report.csv", pmdWantedSmells);
-            HashMap<String, PMDFileSmells> pmdSmellsFromJToZ = parsePMDSmells("./results/pmd/raw-output/__from-j-to-z/pmd-report.csv", pmdWantedSmells);
+            HashMap<String, PMDFileSmells> pmdSmellsCom = parsePMDSmells("./results/pmd/raw-output-new/com/pmd-report.csv", pmdWantedSmells);
+            HashMap<String, PMDFileSmells> pmdSmellsOrg = parsePMDSmells("./results/pmd/raw-output-new/org/pmd-report.csv", pmdWantedSmells);
+            HashMap<String, PMDFileSmells> pmdSmellsFromAToI = parsePMDSmells("./results/pmd/raw-output-new/__from-a-to-i/pmd-report.csv", pmdWantedSmells);
+            HashMap<String, PMDFileSmells> pmdSmellsFromJToZ = parsePMDSmells("./results/pmd/raw-output-new/__from-j-to-z/pmd-report.csv", pmdWantedSmells);
 
             pmdSmells.putAll(pmdSmellsCom);
             pmdSmells.putAll(pmdSmellsOrg);
@@ -254,9 +254,9 @@ public class ResearchingMLCQProgram {
             System.out.println("MCC: " + djStat.getMCC());
 
             //
-            for (String fits : smellFalseNegative) {
-                System.out.println(fits);
-            }
+//            for (String fits : smellFalseNegative) {
+//                System.out.println(fits);
+//            }
 
             System.out.println("\n\n\nMLCQ smells:");
             System.out.println("Long Method: Existing:" + mlcqLongMethodSmells + ", None:" + mlcqLongMethodNone);

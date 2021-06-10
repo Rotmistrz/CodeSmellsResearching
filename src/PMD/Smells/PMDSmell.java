@@ -50,7 +50,7 @@ public class PMDSmell extends Smell {
         if (smellCode == CodeSmellName.BLOB) {
             return rule.equals(PMDCodeSmellName.EXCESSIVE_CLASS_LENGTH) || rule.equals(PMDCodeSmellName.GOD_CLASS);
         } else if (smellCode == CodeSmellName.LONG_METHOD) {
-            return rule.equals(PMDCodeSmellName.EXCESSIVE_METHOD_LENGTH);
+            return rule.equals(PMDCodeSmellName.EXCESSIVE_METHOD_LENGTH) || rule.equals(PMDCodeSmellName.N_PATH_COMPLEXITY);
         } else if (smellCode == CodeSmellName.DATA_CLASS) {
             return rule.equals(PMDCodeSmellName.DATA_CLASS);
         } else {
